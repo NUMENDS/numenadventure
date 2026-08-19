@@ -2,8 +2,15 @@
 
 ![WorkAdventure office image](README-MAP.png)
 
-# WorkAdventure
+# Numen Adventure
 
+Fork interno da Numen baseado em [WorkAdventure](https://github.com/workadventure/workadventure).
+
+> Para branches, sync com upstream e regras de customização, veja [docs/numen/FORK.md](docs/numen/FORK.md).
+
+---
+
+# WorkAdventure
 
 WorkAdventure is a platform that allows you to design **fully customizable collaborative virtual worlds** (metaverse). 
 

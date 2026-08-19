@@ -20,11 +20,23 @@ git fetch upstream
 
 | Branch | Papel |
 |--------|--------|
-| `main` | Produto Numen (default). Trabalho do time, customizações e deploy. |
+| `quality` | Integração Numen (default). **Todo PR do time entra aqui.** |
+| `main` | Produção / release estável. Promovida via PR `quality` → `main`. |
 | `upstream-sync` | Espelho limpo do `master` do WorkAdventure. **Nunca** recebe commits Numen. |
-| `feature/*` | Features do time; abrir PR contra `main`. |
+| `feature/*`, `sync/*` | Trabalho do time; abrir PR contra `quality`. |
 
-A branch `master` legada pode permanecer no remoto por um tempo, mas o fluxo oficial é `main`.
+```mermaid
+flowchart LR
+  feature["feature/* ou sync/*"] -->|"PR"| quality["quality default"]
+  quality -->|"PR release"| main["main produção"]
+  upstream["upstream-sync"] -->|"port seletivo via PR"| quality
+```
+
+## Fluxo de trabalho
+
+1. Criar branch a partir de `quality`.
+2. Abrir PR **sempre contra `quality`** (branch default no GitHub).
+3. Após validação, promover para produção com PR `quality` → `main`.
 
 ## Fluxo de sync (ports com agente)
 
@@ -44,17 +56,18 @@ git push origin upstream-sync --force-with-lease
 ### 2. Ver o que mudou desde a última base Numen
 
 ```bash
-git checkout main
-git log --oneline main..upstream-sync
-git diff main...upstream-sync
+git checkout quality
+git log --oneline quality..upstream-sync
+git diff quality...upstream-sync
 ```
 
-### 3. Portar para `main` via PR
+### 3. Portar para `quality` via PR
 
-1. Criar branch `sync/wa-YYYY-MM-DD` a partir de `main`.
+1. Criar branch `sync/wa-YYYY-MM-DD` a partir de `quality`.
 2. Revisar o diff (humano ou agente) e aplicar só o que faz sentido para a Numen.
-3. Abrir PR contra `main`.
+3. Abrir PR contra `quality`.
 4. Resolver conflitos nas áreas Numen (IAM, branding, maps, `contrib/numen/`).
+5. Quando estável, promover com PR `quality` → `main`.
 
 ### 4. Registrar o sync
 
@@ -70,7 +83,7 @@ Atualize a seção **Último sync** abaixo.
 
 | Data | Commit WA (`upstream-sync`) | PR Numen | Notas |
 |------|----------------------------|----------|-------|
-| 2026-08-19 | _(setup inicial — `main` e `upstream-sync` criados no mesmo ponto do WA)_ | — | Fork organizado |
+| 2026-08-19 | _(setup inicial)_ | — | Fork organizado; `quality` como branch de integração |
 
 ## Regras para customizar sem travar ports futuros
 
@@ -83,7 +96,8 @@ Ordem de preferência (da mais fácil de manter à mais custosa):
 
 ## Proteção de branches
 
-- **`main`**: PR obrigatório; sem force-push.
+- **`quality`**: PR obrigatório; sem force-push. Branch default — destino de todo PR do time.
+- **`main`**: PR obrigatório; sem force-push. Só recebe promoções de `quality`.
 - **`upstream-sync`**: force-push permitido apenas para atualizar o espelho do upstream.
 
 ## Prompt sugerido para agente (port de sync)
@@ -91,10 +105,10 @@ Ordem de preferência (da mais fácil de manter à mais custosa):
 Use após atualizar `upstream-sync`:
 
 ```
-Analise o diff entre main e upstream-sync neste fork Numen Adventure.
+Analise o diff entre quality e upstream-sync neste fork Numen Adventure.
 Liste commits/mudanças do WorkAdventure que valem port (bugfix, security, perf).
 Ignore o que conflita com customizações Numen ou não se aplica ao nosso deploy.
-Proponha um PR sync/wa-YYYY-MM-DD com os patches mínimos.
+Proponha um PR sync/wa-YYYY-MM-DD contra quality com os patches mínimos.
 ```
 
 ## Referências
